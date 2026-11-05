@@ -20,26 +20,22 @@ namespace Hospital_Manager.Controllers
 
         
             
-        public async Task<IActionResult> Index()
-        {
-            var hospitals = await _hospitalService.GetAllHospitalsAsync();
-
-            var model = new List<HospitalIndexViewModel>();//празен списък за ViewModel-ите
-
-            foreach (var hospital in hospitals)
+        public async Task<IActionResult> Index(string? search, int? minBeds, string? sortOrder)
+        { 
+            var hospitals = await _hospitalService.GetAllHospitalsAsync(search, minBeds, sortOrder);
+            var model = hospitals.Select(h => new HospitalIndexViewModel
             {
-                model.Add(new HospitalIndexViewModel
-                {
-                    Id = hospital.Id,
-                    Name = hospital.Name,
-                    Address = hospital.Address,
-                    Email = hospital.Email,
-                    PhoneNumber = hospital.PhoneNumber,
-                    BedsCount = hospital.BedsCount
-                });
-            }
-
-            return View(model);//Изпращаме списъка към View
+                Id = h.Id,
+                Name = h.Name,
+                Address = h.Address,
+                Email = h.Email,
+                PhoneNumber = h.PhoneNumber,
+                BedsCount = h.BedsCount
+            });
+            ViewBag.Search = search;
+            ViewBag.MinBeds = minBeds;
+            ViewBag.SortOrder = sortOrder;
+            return View(model);
         }
         
 
