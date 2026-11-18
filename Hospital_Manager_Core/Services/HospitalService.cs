@@ -65,7 +65,7 @@ namespace Hospital_Manager_Core.Services
             }
             switch(sortOrder)
             {
-                case "name_desc":
+                case "name":
                     query = query.OrderBy(h => h.Name);
                     break;
                 case "beds_asc":
