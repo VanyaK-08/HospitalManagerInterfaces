@@ -29,27 +29,20 @@ namespace Hospital_Manager_Core.Services
         {
             var hospital = await context_new.Hospitals.FindAsync(id);
 
-            if (hospital != null)
+            if (hospital == null)
             {
-                hospital.IsDeleted = true;
-
-                var doctors = await context_new.Doctors
-                    .Include(d => d.DoctorPatients)
-                    .ThenInclude(dp => dp.Patient)
-                    .Where(d => d.HospitalId == id)
-                    .ToListAsync();
-
-                var patients = doctors
-                    .SelectMany(d => d.DoctorPatients)
-                    .Select(dp => dp.Patient)
-                    .Distinct()
-                    .ToList();
-
-                context_new.Patients.RemoveRange(patients);
-                context_new.Doctors.RemoveRange(doctors);
-
-                await context_new.SaveChangesAsync();
+                return;
             }
+
+            bool hasDoctors = await context_new.Doctors
+                .AnyAsync(d => d.HospitalId == id);
+            if (hasDoctors)
+            {
+                throw new InvalidOperationException
+                    ("Cannot delete hospital with associated doctors.");
+            }
+            hospital.IsDeleted = true;
+            await context_new.SaveChangesAsync();
         }
 
         public async Task<List<Hospital>> GetAllHospitalsAsync(string? search = null, int? minBeds = null, string? sortOrder = null)
